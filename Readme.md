@@ -23,21 +23,6 @@ This solution is designed to showcase core data engineering principles. It simul
 * **Apache Kafka:** The backbone for real-time data streaming.
 * **PostgreSQL:** The robust database for data persistence.
 
-## 📁 Project Structure
-
-real-time-data-project/
-├── data-pipeline/               # Contains all Docker-based pipeline services
-│   ├── sensor-generator/        # Python app to generate and send data to Kafka
-│   │   ├── app.py               # Main application logic
-│   │   ├── Dockerfile           # Instructions to build the Docker image
-│   │   └── requirements.txt     # Python dependencies
-│   ├── data-processor/          # Python app to consume, process, and store data
-│   │   ├── app.py               # Main application logic
-│   │   ├── database.py          # Helper functions for database connection and operations
-│   │   ├── Dockerfile           # Instructions to build the Docker image
-│   │   └── requirements.txt     # Python dependencies
-│   └── docker-compose.yml       # Orchestrates Kafka, PostgreSQL, and custom Python services
-└── README.md                    # This document
 
 ## 🚀 How to Run the Data Pipeline
 
