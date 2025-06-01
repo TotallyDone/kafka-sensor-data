@@ -1,0 +1,84 @@
+﻿version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    container_name: zookeeper
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092" # Internal listener for producers/consumers within Docker
+      - "9093:9093" # External listener for applications outside Docker (like your local terminal)
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Internal listener: PLAINTEXT://kafka:9092 (for containers)
+      # External listener: PLAINTEXT_HOST://localhost:9093 (for your host machine)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: sensor_data_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persistent data volume
+
+  sensor-data-generator:
+    build:
+      context: ./sensor-generator
+      dockerfile: Dockerfile
+    container_name: sensor-data-generator
+    environment:
+      KAFKA_BROKER_URL: kafka:9092 # Use the internal Kafka hostname
+      KAFKA_TOPIC: raw_sensor_data
+      GENERATION_INTERVAL_SECONDS: 2
+    volumes:
+      - ./sensor-generator:/app
+    depends_on:
+      - kafka
+    restart: on-failure
+    command: bash -c "sleep 15 && python app.py"
+
+  data-processor:
+    build:
+      context: ./data-processor
+      dockerfile: Dockerfile
+    container_name: data-processor
+    environment:
+      KAFKA_BROKER_URL: kafka:9092
+      KAFKA_INPUT_TOPIC: raw_sensor_data
+      KAFKA_OUTPUT_TOPIC: processed_sensor_data
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: sensor_data_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      KAFKA_DLQ_TOPIC: raw_sensor_data_dlq
+    volumes:
+      - ./data-processor:/app
+    depends_on:
+      - kafka
+      - postgres
+    restart: on-failure
+    command: bash -c "sleep 15 && python app.py"
+
+volumes:
+  postgres_data:
