@@ -36,18 +36,11 @@ This solution is designed to showcase core data engineering principles. It simul
 1.  **Clone the Repository:**
     Open your terminal or command prompt and clone this repository:
     ```bash
-    git clone [https://github.com/YourUsername/Real-Time-IoT-Data-Pipeline.git](https://github.com/YourUsername/Real-Time-IoT-Data-Pipeline.git)
-    cd Real-Time-IoT-Data-Pipeline
-    ```
-    (Remember to replace `YourUsername` and `Real-Time-IoT-Data-Pipeline` with your actual GitHub username and repository name.)
-
-2.  **Navigate to the Data Pipeline Directory:**
-    All the core services are defined within the `data-pipeline` folder.
-    ```bash
-    cd data-pipeline
+    git clone [https://github.com/TotallyDone/kafka-sensor-data.git](https://github.com/TotallyDone/kafka-sensor-data.git)
+    cd kafka-sensor-data
     ```
 
-3.  **Start the Services:**
+2.  **Start the Services:**
     Build and run all the Docker containers defined in `docker-compose.yml` in detached mode (`-d`). This command will set up the entire streaming pipeline.
     ```bash
     docker compose up --build -d
@@ -57,7 +50,7 @@ This solution is designed to showcase core data engineering principles. It simul
     * Download official Docker images for Kafka (along with its dependency Zookeeper) and PostgreSQL.
     * Create and start all these services, establishing a virtual network for them to communicate.
 
-4.  **Verify Data Flow (Optional but Recommended):**
+3.  **Verify Data Flow (Optional but Recommended):**
     You can observe the logs of the running containers to ensure data is flowing as expected:
 
     * **Sensor Generator Logs:** See sensor data being produced and sent to Kafka.
@@ -70,7 +63,7 @@ This solution is designed to showcase core data engineering principles. It simul
         ```
     * **PostgreSQL Data:** Connect to the PostgreSQL database directly to confirm that data is being inserted.
         ```bash
-        docker exec -it postgres-db psql -U user -dmydatabase
+        docker exec -it postgres-db psql -U user -d sensor_data_db
         ```
         Once connected to the `psql` command line, run the following SQL query to see the latest entries:
         ```sql
@@ -79,19 +72,12 @@ This solution is designed to showcase core data engineering principles. It simul
         (Don't forget the semicolon `;` at the end of the SQL query!)
         To exit the `psql` terminal, type `\q` and press Enter.
 
-5.  **Stop the Services:**
+4.  **Stop the Services:**
     When you are finished running the pipeline, you can stop and remove all containers, associated networks, and volumes:
     ```bash
     docker compose down -v
     ```
     The `-v` flag is important here as it removes the named volume where PostgreSQL stores its data. This ensures a clean slate if you want to restart the pipeline from scratch later.
 
-## 📈 Future Enhancements
 
-* **API Layer:** Introduce a REST API (e.g., using Flask or FastAPI) to query the processed data from PostgreSQL, enabling external applications or dashboards to retrieve insights.
-* **Advanced Analytics:** Implement more complex data transformations, aggregations (e.g., hourly averages), or machine learning models within the `data-processor`.
-* **Error Handling & Monitoring:** Enhance error handling (e.g., implementing a "dead-letter queue" in Kafka for invalid messages) and integrate monitoring tools (e.g., Prometheus/Grafana) to observe pipeline health.
-* **Scalability Testing:** Conduct tests to understand how the pipeline performs under high data volumes and how to scale Kafka and worker instances.
-* **Security:** Add authentication and authorization for Kafka topics and PostgreSQL database access.
-* **Cloud Deployment:** Adapt the Docker Compose setup for deployment to cloud platforms (e.g., AWS ECS/EKS, Google Cloud Run/GKE, Azure Container Apps/AKS).
 
